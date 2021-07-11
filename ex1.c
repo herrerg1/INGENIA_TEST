@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+
+static uint8_t eeprom_command, sensor_value;
+
 int main (){
 
 	/* Initialization */
@@ -16,8 +19,19 @@ int main (){
 
 	while (1){
 
+	/* Read EEPROM task command */
+	SPIEepromEnable();
+	eeprom_command = SPIRead();
+	SPIEepromDisable();
 
 	}
 
 	return 0;
+}
+
+void TimerISR (void){
+	/* Read sensor value */
+	SPISensorEnable();
+	sensor_value = SPIRead();
+	SPISensorDisable();
 }
