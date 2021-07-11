@@ -6,9 +6,10 @@
  */
 #include <stdint.h>
 #include <stdio.h>
-
+#define SENSOR_LIMIT 128
 
 static uint8_t eeprom_command, sensor_value;
+static _Bool stop_program = false;
 
 int main (){
 
@@ -17,14 +18,23 @@ int main (){
 	SPInit();
 
 
-	while (1){
+	do {
+		/* Read EEPROM task command */
+		SPIEepromEnable();
+		eeprom_command = SPIRead();
+		SPIEepromDisable();
 
-	/* Read EEPROM task command */
-	SPIEepromEnable();
-	eeprom_command = SPIRead();
-	SPIEepromDisable();
+		/* Execution of the task*/
+		RobotTask (eeprom_command);
 
-	}
+		/* Condition to stop the main */
+		if (sensor_value == SENSOR_LIMIT)
+		{
+			RobotStop();
+			stop_program = 1;
+		}
+
+	}while (!stop_program);
 
 	return 0;
 }
@@ -34,4 +44,6 @@ void TimerISR (void){
 	SPISensorEnable();
 	sensor_value = SPIRead();
 	SPISensorDisable();
+
+	TimerInit();
 }
